@@ -11,9 +11,12 @@ import { createDebugPilot } from "./debugpilot-client";
 
 export const debugPilot = createDebugPilot({
   service: "workflow-engine",
-  baseUrl: process.env.DEBUGPILOT_URL || "http://localhost:4000"
+  baseUrl: process.env.DEBUGPILOT_URL || "http://localhost:4000",
+  autoMetrics: true
 });
 ```
+
+With `autoMetrics: true`, the SDK sends process CPU, memory, request count, error rate, and average latency every 60 seconds.
 
 ## Send Errors
 
@@ -46,15 +49,21 @@ const approveWorkflowSafely = debugPilot.wrapAsync(
 
 ## Express Error Middleware
 
-Place this before your normal error response handler.
+Place request metrics before routes. Place error reporting before your normal error response handler.
 
 ```js
+app.use(debugPilot.expressRequestMetrics());
+
 app.use(debugPilot.expressErrorHandler({
   component: "express"
 }));
 ```
 
 ## Send Metrics
+
+Most services should not calculate these manually. Use automatic metrics above.
+
+Manual metrics are still available for custom workers or queue consumers:
 
 ```js
 await debugPilot.metrics({

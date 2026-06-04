@@ -120,7 +120,8 @@ import { createDebugPilot } from "./debugpilot-client";
 
 const debugPilot = createDebugPilot({
   service: "workflow-engine",
-  baseUrl: "http://localhost:4000"
+  baseUrl: "http://localhost:4000",
+  autoMetrics: true
 });
 
 await debugPilot.error(new Error("tool_timeout"), {
@@ -129,11 +130,7 @@ await debugPilot.error(new Error("tool_timeout"), {
 });
 
 await debugPilot.metrics({
-  cpuUsage: 72,
-  memoryUsage: 640,
-  requestCount: 1200,
-  errorRate: 6.4,
-  avgLatency: 420
+  requestCount: 1200
 });
 
 await debugPilot.deployment({
@@ -142,7 +139,7 @@ await debugPilot.deployment({
 });
 ```
 
-The client still sends data to DebugPilot over HTTP, but the application code only talks to one local helper object.
+The client still sends data to DebugPilot over HTTP, but the application code only talks to one local helper object. With `autoMetrics: true`, the SDK automatically calculates process CPU, memory, request count, error rate, and average latency.
 
 ### Record a deployment
 

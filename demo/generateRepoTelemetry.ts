@@ -246,28 +246,36 @@ async function sendContinuousMetrics() {
     metricMinutes.push(minute);
   }
 
-  await runInBatches(metricMinutes, 8, "metrics", async (minute) => {
+  await runInBatches(metricMinutes, 1, "metrics", async (minute) => {
     const pressure = activePressure(minute);
+    const requestCount = pressure ? randomInt(18000, 42000) : randomInt(6500, 14000);
+    const errorRate = pressure ? pressure.errorRate + Math.random() * 3 : Math.random() * 1.8;
+    const targetLatency = pressure ? pressure.latency : randomInt(90, 280);
+    const errorCount = Math.round((requestCount * errorRate) / 100);
 
-    return client.metrics({
+    for (let index = 0; index < requestCount; index += 1) {
+      const failed = index < errorCount;
+      const jitter = randomInt(-80, 160);
+      client.recordRequest(Math.max(20, targetLatency + jitter), failed);
+    }
+
+    return client.flushMetrics({
       cpuUsage: pressure ? randomInt(pressure.cpu - 8, pressure.cpu) : randomInt(34, 58),
       memoryUsage: pressure ? randomInt(pressure.memory - 90, pressure.memory + 80) : randomInt(420, 690),
-      requestCount: pressure ? randomInt(18000, 42000) : randomInt(6500, 14000),
-      errorRate: pressure ? Number((pressure.errorRate + Math.random() * 3).toFixed(1)) : Number((Math.random() * 1.8).toFixed(1)),
-      avgLatency: pressure ? randomInt(pressure.latency - 180, pressure.latency + 260) : randomInt(90, 280),
       timestamp: atMinute(minute)
     });
   });
 
-  await client.metrics({
+  for (let index = 0; index < 42000; index += 1) {
+    client.recordRequest(randomInt(2700, 3200), index < 11676);
+  }
+
+  await client.flushMetrics({
     cpuUsage: 96,
     memoryUsage: 1320,
-    requestCount: 42000,
-    errorRate: 27.8,
-    avgLatency: 2900,
     timestamp: new Date().toISOString()
   });
-  console.log("[telemetry] metrics: final degraded sample sent");
+  console.log("[telemetry] metrics: final degraded sample calculated by SDK and sent");
 }
 
 async function sendBackgroundLogs() {

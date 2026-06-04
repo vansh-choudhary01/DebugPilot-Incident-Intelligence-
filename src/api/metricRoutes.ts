@@ -6,12 +6,12 @@ export const metricRoutes = Router();
 
 const metricSchema = z.object({
   service: z.string().min(1),
-  cpuUsage: z.number().min(0),
-  memoryUsage: z.number().min(0),
-  requestCount: z.number().min(0),
-  errorRate: z.number().min(0),
-  avgLatency: z.number().min(0),
-  timestamp: z.coerce.date()
+  cpuUsage: z.number().min(0).default(0),
+  memoryUsage: z.number().min(0).default(0),
+  requestCount: z.number().min(0).default(0),
+  errorRate: z.number().min(0).default(0),
+  avgLatency: z.number().min(0).default(0),
+  timestamp: z.coerce.date().default(() => new Date())
 });
 
 metricRoutes.post("/", async (request, response, next) => {
