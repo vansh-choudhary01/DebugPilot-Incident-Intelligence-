@@ -17,7 +17,7 @@ export async function generateText(prompt: string) {
   }
 
   if (env.aiProvider === "gemini" && gemini) {
-    const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = gemini.getGenerativeModel({ model: "gemini-2.5-flash" });
     const response = await model.generateContent(prompt);
     return response.response.text();
   }

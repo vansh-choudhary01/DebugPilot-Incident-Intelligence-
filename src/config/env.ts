@@ -9,6 +9,7 @@ export const env = {
   aiProvider: (process.env.AI_PROVIDER ?? "mock").toLowerCase(),
   openAiApiKey: process.env.OPENAI_API_KEY,
   geminiApiKey: process.env.GEMINI_API_KEY,
+  geminiEmbeddingModel: process.env.GEMINI_EMBEDDING_MODEL ?? "gemini-embedding-2",
   embeddingDimensions: Number(process.env.EMBEDDING_DIMENSIONS ?? 768),
   webhookUrl: process.env.WEBHOOK_URL,
   repositoryBasePath: process.env.REPOSITORY_BASE_PATH ?? "./repos"

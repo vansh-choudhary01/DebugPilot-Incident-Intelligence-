@@ -4,8 +4,8 @@ services:
     container_name: debugpilot-mongo
     ports:
       - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
+    # volumes:
+    #   - mongo-data:/data/db
 
   redis:
     image: redis:7-alpine

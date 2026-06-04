@@ -33,7 +33,7 @@ export async function createEmbedding(text: string) {
   }
 
   if (env.aiProvider === "gemini" && gemini) {
-    const model = gemini.getGenerativeModel({ model: "text-embedding-004" });
+    const model = gemini.getGenerativeModel({ model: env.geminiEmbeddingModel });
     const response = await model.embedContent(text.slice(0, 8000));
     return fitDimensions(response.embedding.values, env.embeddingDimensions);
   }

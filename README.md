@@ -6,7 +6,7 @@ It is not a chatbot and not a log viewer. The core workflow is:
 
 ```text
 GitHub repo -> index code -> embeddings -> MongoDB Vector Search
-Application logs -> incident detection -> root cause analysis -> alert -> incident memory
+Application logs + service metrics + deployments -> incident detection -> RCA job -> alert -> incident memory
 ```
 
 ## Stack
@@ -30,6 +30,7 @@ src/
   embeddings/      embedding and vector search helpers
   github/          clone, scan, and chunk repository code
   logs/            log schema, ingestion, fingerprints
+  metrics/         pushed service metrics
   incidents/       incident schema, detection, memory
   alerts/          console and webhook alerts
 frontend/          React dashboard
@@ -110,6 +111,39 @@ Then open the dashboard and check:
 
 ## API
 
+## Service Integration
+
+Services do not need to manually call every DebugPilot API. Use the small TypeScript client wrapper in `sdk/debugpilot-client.ts`.
+
+```js
+import { createDebugPilot } from "./debugpilot-client";
+
+const debugPilot = createDebugPilot({
+  service: "workflow-engine",
+  baseUrl: "http://localhost:4000"
+});
+
+await debugPilot.error(new Error("tool_timeout"), {
+  component: "backend/executor",
+  file: "backend/executor/executor.js"
+});
+
+await debugPilot.metrics({
+  cpuUsage: 72,
+  memoryUsage: 640,
+  requestCount: 1200,
+  errorRate: 6.4,
+  avgLatency: 420
+});
+
+await debugPilot.deployment({
+  commit: "abc123",
+  author: "vansh"
+});
+```
+
+The client still sends data to DebugPilot over HTTP, but the application code only talks to one local helper object.
+
 ### Record a deployment
 
 ```http
@@ -155,6 +189,23 @@ POST /logs
 ```
 
 DebugPilot stores the log in `logs`, generates a fingerprint like `db_connection_failed`, stores a fingerprint embedding, checks whether an incident should be created, and enqueues RCA in Redis.
+
+### Push metrics
+
+```http
+POST /metrics
+{
+  "service": "payment-service",
+  "cpuUsage": 71,
+  "memoryUsage": 740,
+  "requestCount": 1180,
+  "errorRate": 8.6,
+  "avgLatency": 620,
+  "timestamp": "2026-06-04T10:00:00.000Z"
+}
+```
+
+Services push metrics directly to DebugPilot. There is no Prometheus or OpenTelemetry integration in this MVP.
 
 ### Ask a debugging question
 
@@ -210,6 +261,20 @@ The MVP uses intentionally simple rules:
   "sampleMessage": "Database connection unavailable during checkout",
   "embedding": [0.1, 0.2],
   "lastSeenAt": "2026-06-04T10:00:00.000Z"
+}
+```
+
+### `metrics`
+
+```json
+{
+  "service": "payment-service",
+  "cpuUsage": 71,
+  "memoryUsage": 740,
+  "requestCount": 1180,
+  "errorRate": 8.6,
+  "avgLatency": 620,
+  "timestamp": "2026-06-04T10:00:00.000Z"
 }
 ```
 
@@ -269,7 +334,7 @@ POST /logs -> store log -> detect/create incident -> enqueue Redis job -> return
 The worker owns the expensive path:
 
 ```text
-RCA worker -> load incident -> retrieve logs -> retrieve deployments -> retrieve similar memory -> retrieve service-aware code -> call LLM -> save analysis -> save memory -> alert
+RCA worker -> load incident -> retrieve logs -> retrieve deployments -> retrieve metrics -> retrieve similar memory -> retrieve service-aware code -> call LLM -> save analysis -> save memory -> alert
 ```
 
 Run the API and worker separately:

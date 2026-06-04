@@ -137,6 +137,81 @@ button:disabled {
   margin-bottom: 18px;
 }
 
+.metrics-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  margin-bottom: 18px;
+}
+
+.metric-card {
+  background: white;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.metric-card-header {
+  align-items: start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.metric-card h2 {
+  font-size: 17px;
+  margin: 0;
+}
+
+.metric-card span,
+.sparkline-header span {
+  color: #657383;
+  font-size: 13px;
+}
+
+.metric-numbers {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+  white-space: nowrap;
+}
+
+.metric-trends {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sparkline {
+  background: #f8fafb;
+  border: 1px solid #e8edf2;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.sparkline-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.sparkline svg {
+  display: block;
+  height: 44px;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.sparkline path {
+  fill: none;
+  stroke: #1f6f68;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
 .repo-row,
 .incident-row,
 .table-card,

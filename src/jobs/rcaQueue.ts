@@ -25,7 +25,7 @@ export async function enqueueRcaJob(incidentId: string) {
     "analyze-incident",
     { incidentId },
     {
-      jobId: `incident:${incidentId}`
+      jobId: `incident-${incidentId}`
     }
   );
 }

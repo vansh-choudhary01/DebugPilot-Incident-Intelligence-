@@ -1,22 +1,26 @@
 import { GitBranch, RefreshCw } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
-import { apiGet, apiPost, type Repository, type ServiceHealth } from "../api/client.js";
+import { apiGet, apiPost, type MetricSummary, type Repository, type ServiceHealth } from "../api/client.js";
 import { EmptyState } from "../components/EmptyState.js";
+import { Sparkline } from "../components/Sparkline.js";
 import { StatusPill } from "../components/StatusPill.js";
 
 export function ServicesPage() {
   const [services, setServices] = useState<ServiceHealth[]>([]);
+  const [metricSummaries, setMetricSummaries] = useState<MetricSummary[]>([]);
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [repoUrl, setRepoUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function load() {
-    const [serviceData, repoData] = await Promise.all([
+    const [serviceData, repoData, metricData] = await Promise.all([
       apiGet<ServiceHealth[]>("/services"),
-      apiGet<Repository[]>("/repositories")
+      apiGet<Repository[]>("/repositories"),
+      apiGet<MetricSummary[]>("/metrics/summary")
     ]);
     setServices(serviceData);
     setRepositories(repoData);
+    setMetricSummaries(metricData);
   }
 
   useEffect(() => {
@@ -72,6 +76,31 @@ export function ServicesPage() {
           </div>
         ))}
       </div>
+
+      {metricSummaries.length > 0 && (
+        <div className="metrics-grid">
+          {metricSummaries.map((summary) => (
+            <div className="metric-card" key={summary.service}>
+              <div className="metric-card-header">
+                <div>
+                  <h2>{summary.service}</h2>
+                  <span>{summary.latest ? new Date(summary.latest.timestamp).toLocaleString() : "No metrics"}</span>
+                </div>
+                <div className="metric-numbers">
+                  <strong>{Math.round(summary.latest?.cpuUsage ?? 0)}% CPU</strong>
+                  <strong>{Math.round(summary.latest?.memoryUsage ?? 0)}MB</strong>
+                </div>
+              </div>
+              <div className="metric-trends">
+                <Sparkline points={summary.trends.avgLatency} label="Latency" unit="ms" />
+                <Sparkline points={summary.trends.errorRate} label="Error rate" unit="%" />
+                <Sparkline points={summary.trends.memoryUsage} label="Memory" unit="MB" />
+                <Sparkline points={summary.trends.cpuUsage} label="CPU" unit="%" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {services.length === 0 ? (
         <EmptyState message="No logs ingested yet." />

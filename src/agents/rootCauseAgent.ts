@@ -8,6 +8,7 @@ import { getLatestRepositoryId } from "../services/repositoryIndexer.js";
 import { generateText } from "./llmService.js";
 import type { RootCauseAnalysis } from "../types/analysis.js";
 import { DeploymentModel } from "../deployments/Deployment.js";
+import { MetricModel } from "../metrics/Metric.js";
 
 function parseAnalysis(text: string): RootCauseAnalysis {
   const fallback: RootCauseAnalysis = {
@@ -45,15 +46,21 @@ export async function runRootCauseAnalysis(incident: IncidentDocument) {
   const query = `${incident.service} ${incident.fingerprint}\n${logContext}`;
   const embedding = await createEmbedding(query);
   const repoId = await getLatestRepositoryId();
-  const deploymentWindowStart = new Date(incident.startedAt.getTime() - 2 * 60 * 60 * 1000);
-  const deploymentWindowEnd = new Date(incident.startedAt.getTime() + 30 * 60 * 1000);
-  const [similarIncidents, codeChunks, deployments] = await Promise.all([
+  const contextWindowStart = new Date(incident.startedAt.getTime() - 2 * 60 * 60 * 1000);
+  const contextWindowEnd = new Date(incident.lastSeenAt.getTime() + 30 * 60 * 1000);
+  const [similarIncidents, codeChunks, deployments, metrics] = await Promise.all([
     searchIncidentMemories(embedding, 5),
     searchServiceCodeChunks(embedding, incident.service, repoId, 8),
     DeploymentModel.find({
       service: incident.service,
-      timestamp: { $gte: deploymentWindowStart, $lte: deploymentWindowEnd }
-    }).sort({ timestamp: -1 })
+      timestamp: { $gte: contextWindowStart, $lte: contextWindowEnd }
+    }).sort({ timestamp: -1 }),
+    MetricModel.find({
+      service: incident.service,
+      timestamp: { $gte: contextWindowStart, $lte: contextWindowEnd }
+    })
+      .sort({ timestamp: 1 })
+      .limit(100)
   ]);
 
   const prompt = `
@@ -84,6 +91,11 @@ ${deployments.map((deployment) => {
     const minutesBeforeIncident = Math.round((incident.startedAt.getTime() - deployment.timestamp.getTime()) / 60000);
     const timing = minutesBeforeIncident >= 0 ? `${minutesBeforeIncident} minutes before incident started` : "after incident started";
     return `- ${incident.service} deployed commit ${deployment.commit} ${timing}${deployment.author ? ` by ${deployment.author}` : ""}`;
+  }).join("\n") || "None"}
+
+Recent metrics for this service:
+${metrics.map((metric) => {
+    return `- [${metric.timestamp.toISOString()}] cpu=${metric.cpuUsage}% memory=${metric.memoryUsage}MB requests=${metric.requestCount} errorRate=${metric.errorRate}% avgLatency=${metric.avgLatency}ms`;
   }).join("\n") || "None"}
 
 Relevant code chunks:

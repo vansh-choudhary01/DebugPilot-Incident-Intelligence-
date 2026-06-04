@@ -45,6 +45,33 @@ export type Deployment = {
   author?: string;
 };
 
+export type MetricPoint = {
+  timestamp: string;
+  value: number;
+};
+
+export type Metric = {
+  _id: string;
+  service: string;
+  cpuUsage: number;
+  memoryUsage: number;
+  requestCount: number;
+  errorRate: number;
+  avgLatency: number;
+  timestamp: string;
+};
+
+export type MetricSummary = {
+  service: string;
+  latest?: Metric;
+  trends: {
+    avgLatency: MetricPoint[];
+    errorRate: MetricPoint[];
+    memoryUsage: MetricPoint[];
+    cpuUsage: MetricPoint[];
+  };
+};
+
 export type Repository = {
   _id: string;
   url: string;

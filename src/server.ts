@@ -8,7 +8,7 @@ async function main() {
   await connectRedis();
 
   const app = createApp();
-  app.listen(env.port, () => {
+  app.listen(env.port, "0.0.0.0", () => {
     console.log(`[debugpilot] backend listening on http://localhost:${env.port}`);
   });
 }
