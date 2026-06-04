@@ -1,0 +1,32 @@
+[
+  {
+    "service": "payment-service",
+    "level": "error",
+    "message": "Payment checkout failed because database connection pool timed out",
+    "metadata": { "route": "/checkout", "tenant": "demo" }
+  },
+  {
+    "service": "payment-service",
+    "level": "error",
+    "message": "Payment checkout failed because database connection pool timed out",
+    "metadata": { "route": "/checkout", "tenant": "demo" }
+  },
+  {
+    "service": "payment-service",
+    "level": "error",
+    "message": "Payment checkout failed because database connection pool timed out",
+    "metadata": { "route": "/checkout", "tenant": "demo" }
+  },
+  {
+    "service": "payment-service",
+    "level": "error",
+    "message": "Payment checkout failed because database connection pool timed out",
+    "metadata": { "route": "/checkout", "tenant": "demo" }
+  },
+  {
+    "service": "payment-service",
+    "level": "error",
+    "message": "Payment checkout failed because database connection pool timed out",
+    "metadata": { "route": "/checkout", "tenant": "demo" }
+  }
+]

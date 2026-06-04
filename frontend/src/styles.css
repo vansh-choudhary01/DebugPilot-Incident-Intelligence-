@@ -1,0 +1,327 @@
+:root {
+  color: #18202a;
+  background: #f4f6f8;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  align-items: center;
+  background: #1f6f68;
+  border: 0;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #20252d;
+  color: #f8fafc;
+  padding: 24px 16px;
+}
+
+.brand {
+  align-items: center;
+  display: flex;
+  font-size: 20px;
+  font-weight: 800;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.sidebar nav {
+  display: grid;
+  gap: 8px;
+}
+
+.sidebar a {
+  align-items: center;
+  border-radius: 6px;
+  color: #dce3ea;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  text-decoration: none;
+}
+
+.sidebar a.active,
+.sidebar a:hover {
+  background: #313943;
+  color: white;
+}
+
+.main-panel {
+  padding: 32px;
+}
+
+.page-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 30px;
+  margin: 0;
+}
+
+.page-header p {
+  color: #657383;
+  margin: 4px 0 0;
+}
+
+.repo-form,
+.ask-box {
+  align-items: center;
+  background: white;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px;
+}
+
+.repo-form input,
+.ask-box textarea {
+  border: 1px solid #cfd8e3;
+  border-radius: 6px;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+.ask-box {
+  align-items: stretch;
+}
+
+.ask-box textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.repo-list,
+.incident-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.repo-row,
+.incident-row,
+.table-card,
+.panel,
+.empty-state {
+  background: white;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+}
+
+.repo-row {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto auto;
+  padding: 12px 14px;
+}
+
+.repo-row span {
+  color: #657383;
+  display: block;
+  font-size: 14px;
+}
+
+.icon-button {
+  background: #eef3f5;
+  color: #27313d;
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.table-card {
+  overflow: hidden;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid #e8edf2;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+th {
+  color: #536170;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.status-pill {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 10px;
+}
+
+.status-pill.good {
+  background: #dff5e7;
+  color: #17613a;
+}
+
+.status-pill.warn {
+  background: #fff2cc;
+  color: #815a00;
+}
+
+.status-pill.bad {
+  background: #ffe0df;
+  color: #9f2621;
+}
+
+.status-pill.neutral {
+  background: #e8edf2;
+  color: #344153;
+}
+
+.empty-state {
+  color: #657383;
+  padding: 32px;
+  text-align: center;
+}
+
+.incident-row {
+  color: inherit;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr auto;
+  padding: 16px;
+  text-decoration: none;
+}
+
+.incident-row h2,
+.panel h2 {
+  font-size: 18px;
+  margin: 0 0 6px;
+}
+
+.incident-row p {
+  color: #657383;
+  margin: 0;
+}
+
+.incident-meta {
+  align-items: flex-end;
+  color: #657383;
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
+.panel {
+  padding: 18px;
+}
+
+.answer-panel p {
+  white-space: pre-wrap;
+}
+
+details {
+  border-top: 1px solid #e8edf2;
+  padding: 10px 0;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+pre {
+  background: #17202a;
+  border-radius: 6px;
+  color: #e7edf5;
+  overflow-x: auto;
+  padding: 12px;
+}
+
+.log-line {
+  background: #f4f6f8;
+  border-radius: 6px;
+  display: block;
+  margin-top: 8px;
+  overflow-x: auto;
+  padding: 10px;
+}
+
+@media (max-width: 840px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .sidebar nav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .sidebar a {
+    justify-content: center;
+  }
+
+  .main-panel {
+    padding: 18px;
+  }
+
+  .detail-grid,
+  .incident-row {
+    grid-template-columns: 1fr;
+  }
+
+  .incident-meta {
+    align-items: start;
+    justify-items: start;
+  }
+}
