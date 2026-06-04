@@ -9,7 +9,7 @@ type AskResponse = {
 };
 
 export function AskPage() {
-  const [question, setQuestion] = useState("Why is payment service failing?");
+  const [question, setQuestion] = useState("Why is cex-v2-boilercode failing?");
   const [result, setResult] = useState<AskResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +25,7 @@ export function AskPage() {
       <header className="page-header">
         <div>
           <h1>Ask</h1>
-          <p>Ask debugging questions across logs, incident memory, and indexed code.</p>
+          <p>Ask focused debugging questions across logs, metrics, memory, and code.</p>
         </div>
       </header>
 

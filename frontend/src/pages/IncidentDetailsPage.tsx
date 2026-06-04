@@ -1,4 +1,4 @@
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Code2, GitCommit, ListChecks, SearchX, ScrollText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { apiGet, apiPost, type Deployment, type Incident } from "../api/client.js";
@@ -60,7 +60,7 @@ export function IncidentDetailsPage() {
       <header className="page-header">
         <div>
           <h1>{incident.title}</h1>
-          <p>{incident.service} · {incident.fingerprint}</p>
+          <p>{incident.service} / {incident.fingerprint}</p>
         </div>
         <button onClick={resolveIncident}>
           <CheckCircle size={16} /> Resolve
@@ -69,26 +69,41 @@ export function IncidentDetailsPage() {
 
       <div className="detail-grid">
         <div className="panel">
-          <h2>Incident Summary</h2>
-          <StatusPill label={incident.status} tone={incident.status === "open" ? "bad" : "good"} />
+          <div className="panel-title">
+            <ScrollText size={18} />
+            <h2>Incident Summary</h2>
+          </div>
+          <div className="inline-meta">
+            <StatusPill label={incident.status} tone={incident.status === "open" ? "bad" : "good"} />
+            <StatusPill label={incident.severity} tone={incident.severity === "high" ? "bad" : incident.severity === "medium" ? "warn" : "neutral"} />
+          </div>
           <p>{incident.analysis?.whatHappened ?? "Analysis pending."}</p>
           <p>Confidence: {Math.round((incident.analysis?.confidenceScore ?? 0) * 100)}%</p>
         </div>
         <div className="panel">
-          <h2>Root Cause</h2>
+          <div className="panel-title">
+            <SearchX size={18} />
+            <h2>Root Cause</h2>
+          </div>
           <p>{incident.analysis?.likelyRootCause ?? "Analysis pending."}</p>
         </div>
       </div>
 
       <div className="detail-grid">
         <div className="panel">
-          <h2>Suggested Fixes</h2>
+          <div className="panel-title">
+            <ListChecks size={18} />
+            <h2>Suggested Fixes</h2>
+          </div>
           <ul>
             {(incident.analysis?.suggestedFixes ?? []).map((fix) => <li key={fix}>{fix}</li>)}
           </ul>
         </div>
         <div className="panel">
-          <h2>Related Deployments</h2>
+          <div className="panel-title">
+            <GitCommit size={18} />
+            <h2>Related Deployments</h2>
+          </div>
           {incident.relatedDeployments.length === 0 ? (
             <p>No deployments found near the incident start.</p>
           ) : (
@@ -105,7 +120,10 @@ export function IncidentDetailsPage() {
 
       <div className="detail-grid">
         <div className="panel">
-          <h2>Related Code</h2>
+          <div className="panel-title">
+            <Code2 size={18} />
+            <h2>Related Code</h2>
+          </div>
           {incident.relatedCodeChunks.map((chunk) => (
             <details key={chunk._id}>
               <summary>{chunk.filePath}</summary>
@@ -127,7 +145,10 @@ export function IncidentDetailsPage() {
       </div>
 
       <div className="panel">
-        <h2>Relevant Logs</h2>
+        <div className="panel-title">
+          <ScrollText size={18} />
+          <h2>Relevant Logs</h2>
+        </div>
         {incident.logs.map((log) => (
           <code className="log-line" key={log._id}>
             [{new Date(log.timestamp).toLocaleString()}] {log.level} {log.service}: {log.message}

@@ -6,8 +6,13 @@ export function AppShell() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <RadioTower size={24} />
-          <span>DebugPilot</span>
+          <div className="brand-mark">
+            <RadioTower size={20} />
+          </div>
+          <div>
+            <span>DebugPilot</span>
+            <small>Incident intelligence</small>
+          </div>
         </div>
         <nav>
           <NavLink to="/">

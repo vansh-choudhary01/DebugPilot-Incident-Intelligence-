@@ -1,4 +1,4 @@
-import { GitBranch, RefreshCw } from "lucide-react";
+import { Activity, AlertTriangle, GitBranch, RefreshCw, Server } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { apiGet, apiPost, type MetricSummary, type Repository, type ServiceHealth } from "../api/client.js";
 import { EmptyState } from "../components/EmptyState.js";
@@ -43,14 +43,41 @@ export function ServicesPage() {
     await load();
   }
 
+  const totalErrors = services.reduce((sum, service) => sum + service.errorCount, 0);
+  const openIncidents = services.reduce((sum, service) => sum + service.openIncidents, 0);
+  const degradedServices = services.filter((service) => service.health === "degraded").length;
+
   return (
     <section>
       <header className="page-header">
         <div>
           <h1>Services</h1>
-          <p>Live service health from ingested application logs.</p>
+          <p>Operational health from logs, metrics, deployments, and RCA jobs.</p>
         </div>
       </header>
+
+      <div className="summary-grid">
+        <div className="summary-card">
+          <Server size={18} />
+          <span>Services</span>
+          <strong>{services.length}</strong>
+        </div>
+        <div className="summary-card">
+          <AlertTriangle size={18} />
+          <span>Open incidents</span>
+          <strong>{openIncidents}</strong>
+        </div>
+        <div className="summary-card">
+          <Activity size={18} />
+          <span>Errors</span>
+          <strong>{totalErrors}</strong>
+        </div>
+        <div className="summary-card">
+          <RefreshCw size={18} />
+          <span>Degraded</span>
+          <strong>{degradedServices}</strong>
+        </div>
+      </div>
 
       <form className="repo-form" onSubmit={connectRepository}>
         <GitBranch size={18} />

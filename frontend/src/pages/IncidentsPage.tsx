@@ -11,6 +11,10 @@ export function IncidentsPage() {
     void apiGet<Incident[]>("/incidents").then(setIncidents);
   }, []);
 
+  const openCount = incidents.filter((incident) => incident.status === "open").length;
+  const highSeverityCount = incidents.filter((incident) => incident.severity === "high").length;
+  const analyzedCount = incidents.filter((incident) => Boolean(incident.analysis)).length;
+
   return (
     <section>
       <header className="page-header">
@@ -20,6 +24,25 @@ export function IncidentsPage() {
         </div>
       </header>
 
+      <div className="summary-grid">
+        <div className="summary-card">
+          <span>Total incidents</span>
+          <strong>{incidents.length}</strong>
+        </div>
+        <div className="summary-card">
+          <span>Open</span>
+          <strong>{openCount}</strong>
+        </div>
+        <div className="summary-card">
+          <span>High severity</span>
+          <strong>{highSeverityCount}</strong>
+        </div>
+        <div className="summary-card">
+          <span>Analyzed</span>
+          <strong>{analyzedCount}</strong>
+        </div>
+      </div>
+
       {incidents.length === 0 ? (
         <EmptyState message="No incidents detected yet." />
       ) : (
@@ -27,7 +50,10 @@ export function IncidentsPage() {
           {incidents.map((incident) => (
             <Link className="incident-row" to={`/incidents/${incident._id}`} key={incident._id}>
               <div>
-                <h2>{incident.title}</h2>
+                <div className="incident-title-line">
+                  <h2>{incident.title}</h2>
+                  <StatusPill label={incident.severity} tone={incident.severity === "high" ? "bad" : incident.severity === "medium" ? "warn" : "neutral"} />
+                </div>
                 <p>{incident.analysis?.likelyRootCause ?? "Analysis pending"}</p>
               </div>
               <div className="incident-meta">
