@@ -39,8 +39,6 @@ export async function detectIncidentForLog(log: LogEntryDocument) {
     return cosineSimilarity(log.fingerprintEmbedding, entry.fingerprintEmbedding) >= semanticSimilarityThreshold;
   });
 
-  const relatedFingerprints = [...new Set(matchingLogs.map((entry) => entry.fingerprint))];
-
   const spikeWindowStart = new Date(log.timestamp.getTime() - spikeWindowMs);
   const spikeCount = await LogEntryModel.countDocuments({
     service: log.service,
@@ -54,22 +52,29 @@ export async function detectIncidentForLog(log: LogEntryDocument) {
 
   const existingOpenIncident = await IncidentModel.findOne({
     service: log.service,
-    fingerprint: { $in: relatedFingerprints },
+    fingerprint: log.fingerprint,
     status: "open"
   }).sort({ createdAt: -1 });
 
   if (existingOpenIncident) {
-    existingOpenIncident.occurrenceCount = matchingLogs.length;
-    existingOpenIncident.lastSeenAt = log.timestamp;
-    existingOpenIncident.logIds = matchingLogs.map((entry) => entry._id);
-    existingOpenIncident.severity = severityForCount(Math.max(matchingLogs.length, spikeCount));
-    await existingOpenIncident.save();
+    const updatedIncident = await IncidentModel.findByIdAndUpdate(
+      existingOpenIncident._id,
+      {
+        $set: {
+          occurrenceCount: matchingLogs.length,
+          lastSeenAt: log.timestamp,
+          logIds: matchingLogs.map((entry) => entry._id),
+          severity: severityForCount(Math.max(matchingLogs.length, spikeCount))
+        }
+      },
+      { new: true }
+    );
 
     if (!existingOpenIncident.analysis) {
       await enqueueRcaJob(existingOpenIncident._id.toString());
     }
 
-    return existingOpenIncident;
+    return updatedIncident ?? existingOpenIncident;
   }
 
   const incident = await IncidentModel.create({

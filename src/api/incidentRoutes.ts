@@ -4,6 +4,7 @@ import { LogEntryModel } from "../logs/LogEntry.js";
 import { CodeChunkModel } from "../embeddings/CodeChunk.js";
 import { IncidentMemoryModel } from "../incidents/IncidentMemory.js";
 import { DeploymentModel } from "../deployments/Deployment.js";
+import { enqueueRcaJob } from "../jobs/rcaQueue.js";
 
 export const incidentRoutes = Router();
 
@@ -55,4 +56,27 @@ incidentRoutes.post("/:id/resolve", async (request, response) => {
 
   await IncidentMemoryModel.updateOne({ incidentId: incident._id }, { $set: { outcome } });
   response.json(incident);
+});
+
+incidentRoutes.post("/:id/reanalyze", async (request, response) => {
+  const incident = await IncidentModel.findByIdAndUpdate(
+    request.params.id,
+    {
+      $unset: { analysis: "" },
+      $set: {
+        relatedCodeChunks: [],
+        similarIncidentIds: [],
+        relatedDeploymentIds: []
+      }
+    },
+    { new: true }
+  );
+
+  if (!incident) {
+    response.status(404).json({ error: "Incident not found" });
+    return;
+  }
+
+  await enqueueRcaJob(incident._id.toString());
+  response.json({ queued: true, incidentId: incident._id });
 });

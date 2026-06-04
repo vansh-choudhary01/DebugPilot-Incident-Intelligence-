@@ -4,9 +4,14 @@ type DebugPilotOptions = {
   service?: string;
   baseUrl?: string;
   enabled?: boolean;
+  timeoutMs?: number;
 };
 
 type Metadata = Record<string, unknown>;
+
+type LogOptions = {
+  timestamp?: string;
+};
 
 type MetricPayload = {
   cpuUsage: number;
@@ -43,6 +48,7 @@ export function createDebugPilot(options: DebugPilotOptions = {}) {
   const baseUrl = options.baseUrl || envValue("DEBUGPILOT_URL") || "http://localhost:4000";
   const service = options.service || envValue("SERVICE_NAME") || "unknown-service";
   const enabled = options.enabled ?? envValue("DEBUGPILOT_ENABLED") !== "false";
+  const timeoutMs = options.timeoutMs ?? Number(envValue("DEBUGPILOT_TIMEOUT_MS") || 20000);
 
   async function send(path: string, payload: unknown) {
     if (!enabled) {
@@ -50,11 +56,16 @@ export function createDebugPilot(options: DebugPilotOptions = {}) {
     }
 
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
       const response = await fetch(`${baseUrl}${path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: controller.signal
       });
+      clearTimeout(timeout);
 
       if (!response.ok) {
         const body = await response.text();
@@ -83,24 +94,24 @@ export function createDebugPilot(options: DebugPilotOptions = {}) {
     };
   }
 
-  async function log(level: LogLevel, message: string, metadata: Metadata = {}) {
+  async function log(level: LogLevel, message: string, metadata: Metadata = {}, options: LogOptions = {}) {
     return send("/logs", {
       service,
       level,
       message,
       metadata,
-      timestamp: new Date().toISOString()
+      timestamp: options.timestamp || new Date().toISOString()
     });
   }
 
-  async function error(errorOrMessage: unknown, metadata: Metadata = {}) {
+  async function error(errorOrMessage: unknown, metadata: Metadata = {}, options: LogOptions = {}) {
     const normalized =
       typeof errorOrMessage === "string" ? { message: errorOrMessage } : normalizeError(errorOrMessage);
 
     return log("error", normalized.message, {
       ...metadata,
       error: normalized
-    });
+    }, options);
   }
 
   async function metrics(values: MetricPayload) {

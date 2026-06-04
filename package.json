@@ -11,6 +11,7 @@
     "start": "node dist/src/server.js",
     "start:worker": "node dist/src/worker.js",
     "seed": "tsx demo/seed.ts",
+    "telemetry:cex": "tsx demo/generateRepoTelemetry.ts",
     "frontend:dev": "npm --prefix frontend run dev",
     "frontend:build": "npm --prefix frontend run build",
     "check": "npm run build && npm --prefix frontend run build"

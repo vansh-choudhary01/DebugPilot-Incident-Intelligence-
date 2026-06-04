@@ -1,6 +1,6 @@
 import type mongoose from "mongoose";
 import { createEmbedding } from "../embeddings/embeddingService.js";
-import { searchIncidentMemories, searchServiceCodeChunks } from "../embeddings/searchService.js";
+import { searchIncidentCodeChunks, searchIncidentMemories } from "../embeddings/searchService.js";
 import { LogEntryModel } from "../logs/LogEntry.js";
 import { IncidentModel, type IncidentDocument } from "../incidents/Incident.js";
 import { IncidentMemoryModel } from "../incidents/IncidentMemory.js";
@@ -34,6 +34,17 @@ function parseAnalysis(text: string): RootCauseAnalysis {
   }
 }
 
+function metadataSearchText(metadata?: Record<string, unknown>) {
+  if (!metadata) {
+    return "";
+  }
+
+  return Object.entries(metadata)
+    .filter(([key]) => key !== "file" && key !== "line")
+    .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(" ") : String(value)}`)
+    .join("\n");
+}
+
 export async function runRootCauseAnalysis(incident: IncidentDocument) {
   const logs = await LogEntryModel.find({ _id: { $in: incident.logIds } })
     .sort({ timestamp: 1 })
@@ -43,14 +54,15 @@ export async function runRootCauseAnalysis(incident: IncidentDocument) {
     .map((log) => `[${log.timestamp.toISOString()}] ${log.level} ${log.service}: ${log.message}`)
     .join("\n");
 
-  const query = `${incident.service} ${incident.fingerprint}\n${logContext}`;
+  const metadataContext = logs.map((log) => metadataSearchText(log.metadata)).filter(Boolean).join("\n");
+  const query = `${incident.service} ${incident.fingerprint}\n${logContext}\n${metadataContext}`;
   const embedding = await createEmbedding(query);
   const repoId = await getRepositoryIdForService(incident.service);
   const contextWindowStart = new Date(incident.startedAt.getTime() - 2 * 60 * 60 * 1000);
   const contextWindowEnd = new Date(incident.lastSeenAt.getTime() + 30 * 60 * 1000);
   const [similarIncidents, codeChunks, deployments, metrics] = await Promise.all([
     searchIncidentMemories(embedding, 5),
-    searchServiceCodeChunks(embedding, incident.service, repoId, 8, false),
+    searchIncidentCodeChunks(embedding, query, repoId, 8),
     DeploymentModel.find({
       service: incident.service,
       timestamp: { $gte: contextWindowStart, $lte: contextWindowEnd }

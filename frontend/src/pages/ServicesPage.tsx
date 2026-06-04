@@ -87,15 +87,15 @@ export function ServicesPage() {
                   <span>{summary.latest ? new Date(summary.latest.timestamp).toLocaleString() : "No metrics"}</span>
                 </div>
                 <div className="metric-numbers">
-                  <strong>{Math.round(summary.latest?.cpuUsage ?? 0)}% CPU</strong>
-                  <strong>{Math.round(summary.latest?.memoryUsage ?? 0)}MB</strong>
+                  <strong>Peak {Math.round(summary.peaks.cpuUsage)}% CPU</strong>
+                  <strong>Peak {Math.round(summary.peaks.memoryUsage)}MB</strong>
                 </div>
               </div>
               <div className="metric-trends">
-                <Sparkline points={summary.trends.avgLatency} label="Latency" unit="ms" />
-                <Sparkline points={summary.trends.errorRate} label="Error rate" unit="%" />
-                <Sparkline points={summary.trends.memoryUsage} label="Memory" unit="MB" />
-                <Sparkline points={summary.trends.cpuUsage} label="CPU" unit="%" />
+                <Sparkline points={summary.trends.avgLatency} label="Latency" unit="ms" highlight={summary.peaks.avgLatency} />
+                <Sparkline points={summary.trends.errorRate} label="Error rate" unit="%" highlight={summary.peaks.errorRate} />
+                <Sparkline points={summary.trends.memoryUsage} label="Memory" unit="MB" highlight={summary.peaks.memoryUsage} />
+                <Sparkline points={summary.trends.cpuUsage} label="CPU" unit="%" highlight={summary.peaks.cpuUsage} />
               </div>
             </div>
           ))}

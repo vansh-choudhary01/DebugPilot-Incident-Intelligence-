@@ -64,6 +64,12 @@ export type Metric = {
 export type MetricSummary = {
   service: string;
   latest?: Metric;
+  peaks: {
+    avgLatency: number;
+    errorRate: number;
+    memoryUsage: number;
+    cpuUsage: number;
+  };
   trends: {
     avgLatency: MetricPoint[];
     errorRate: MetricPoint[];

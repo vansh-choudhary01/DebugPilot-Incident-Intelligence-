@@ -1,4 +1,12 @@
 const knownPatterns: Array<[RegExp, string]> = [
+  [/engine request timeout.*no response received/i, "engine_request_timeout"],
+  [/order processing latency.*queue backlog/i, "engine_processing_backlog"],
+  [/failed to receive engine response.*redis response queue/i, "redis_brpop_response_failure"],
+  [/orderbook state inconsistency/i, "orderbook_inconsistency"],
+  [/cannot read properties of undefined.*symbol/i, "undefined_symbol_payload_crash"],
+  [/failed to lock user balance/i, "balance_lock_failure"],
+  [/failed to generate market depth snapshot/i, "market_depth_generation_failure"],
+  [/symbol .* not found in exchange store/i, "invalid_symbol_processing"],
   [/database|postgres|mysql|mongo|db/i, "db_connection_failed"],
   [/redis|cache/i, "redis_timeout"],
   [/payment|stripe|checkout|invoice/i, "payment_failed"],

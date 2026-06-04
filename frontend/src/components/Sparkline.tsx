@@ -4,9 +4,10 @@ type Props = {
   points: MetricPoint[];
   label: string;
   unit: string;
+  highlight?: number;
 };
 
-export function Sparkline({ points, label, unit }: Props) {
+export function Sparkline({ points, label, unit, highlight }: Props) {
   const values = points.map((point) => point.value);
   const min = Math.min(...values, 0);
   const max = Math.max(...values, 1);
@@ -20,13 +21,13 @@ export function Sparkline({ points, label, unit }: Props) {
     })
     .join(" ");
 
-  const latest = values.at(-1) ?? 0;
+  const latest = highlight ?? values.at(-1) ?? 0;
 
   return (
     <div className="sparkline">
       <div className="sparkline-header">
         <span>{label}</span>
-        <strong>{Math.round(latest)}{unit}</strong>
+        <strong>{highlight !== undefined ? "Peak " : ""}{Math.round(latest)}{unit}</strong>
       </div>
       <svg viewBox="0 0 100 40" preserveAspectRatio="none" role="img" aria-label={`${label} trend`}>
         <path d={path} />

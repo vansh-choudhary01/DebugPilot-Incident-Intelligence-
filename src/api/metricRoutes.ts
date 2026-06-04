@@ -39,10 +39,17 @@ metricRoutes.get("/summary", async (_request, response) => {
       const recentMetrics = await MetricModel.find({ service }).sort({ timestamp: -1 }).limit(24);
       const orderedMetrics = recentMetrics.reverse();
       const latest = orderedMetrics.at(-1);
+      const peaks = {
+        cpuUsage: Math.max(...orderedMetrics.map((metric) => metric.cpuUsage), 0),
+        memoryUsage: Math.max(...orderedMetrics.map((metric) => metric.memoryUsage), 0),
+        errorRate: Math.max(...orderedMetrics.map((metric) => metric.errorRate), 0),
+        avgLatency: Math.max(...orderedMetrics.map((metric) => metric.avgLatency), 0)
+      };
 
       return {
         service,
         latest,
+        peaks,
         trends: {
           avgLatency: orderedMetrics.map((metric) => ({
             timestamp: metric.timestamp,
