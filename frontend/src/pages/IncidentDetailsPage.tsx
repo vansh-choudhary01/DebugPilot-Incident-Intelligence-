@@ -1,7 +1,7 @@
 import { CheckCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { apiGet, apiPost, type Incident } from "../api/client.js";
+import { apiGet, apiPost, type Deployment, type Incident } from "../api/client.js";
 import { StatusPill } from "../components/StatusPill.js";
 
 type Log = {
@@ -22,7 +22,14 @@ type CodeChunk = {
 type IncidentDetails = Incident & {
   logs: Log[];
   relatedCodeChunks: CodeChunk[];
-  similarIncidents: Array<{ _id: string; title: string; rootCause: string }>;
+  similarIncidents: Array<{
+    _id: string;
+    title: string;
+    rootCause: string;
+    suggestedFixes: string[];
+    outcome: string;
+  }>;
+  relatedDeployments: Deployment[];
 };
 
 export function IncidentDetailsPage() {
@@ -62,17 +69,37 @@ export function IncidentDetailsPage() {
 
       <div className="detail-grid">
         <div className="panel">
-          <h2>Root Cause</h2>
+          <h2>Incident Summary</h2>
           <StatusPill label={incident.status} tone={incident.status === "open" ? "bad" : "good"} />
           <p>{incident.analysis?.whatHappened ?? "Analysis pending."}</p>
-          <strong>{incident.analysis?.likelyRootCause}</strong>
           <p>Confidence: {Math.round((incident.analysis?.confidenceScore ?? 0) * 100)}%</p>
         </div>
+        <div className="panel">
+          <h2>Root Cause</h2>
+          <p>{incident.analysis?.likelyRootCause ?? "Analysis pending."}</p>
+        </div>
+      </div>
+
+      <div className="detail-grid">
         <div className="panel">
           <h2>Suggested Fixes</h2>
           <ul>
             {(incident.analysis?.suggestedFixes ?? []).map((fix) => <li key={fix}>{fix}</li>)}
           </ul>
+        </div>
+        <div className="panel">
+          <h2>Related Deployments</h2>
+          {incident.relatedDeployments.length === 0 ? (
+            <p>No deployments found near the incident start.</p>
+          ) : (
+            incident.relatedDeployments.map((deployment) => (
+              <p key={deployment._id}>
+                <strong>{deployment.commit}</strong><br />
+                {new Date(deployment.timestamp).toLocaleString()}
+                {deployment.author ? ` by ${deployment.author}` : ""}
+              </p>
+            ))
+          )}
         </div>
       </div>
 
@@ -89,7 +116,12 @@ export function IncidentDetailsPage() {
         <div className="panel">
           <h2>Similar Incidents</h2>
           {incident.similarIncidents.map((memory) => (
-            <p key={memory._id}><strong>{memory.title}</strong><br />{memory.rootCause}</p>
+            <p key={memory._id}>
+              <strong>{memory.title}</strong><br />
+              {memory.rootCause}<br />
+              Outcome: {memory.outcome ?? "unknown"}<br />
+              Fixes: {(memory.suggestedFixes ?? []).join(", ") || "unknown"}
+            </p>
           ))}
         </div>
       </div>

@@ -8,6 +8,7 @@ import { alertRoutes } from "./api/alertRoutes.js";
 import { serviceRoutes } from "./api/serviceRoutes.js";
 import { askRoutes } from "./api/askRoutes.js";
 import { healthRoutes } from "./api/healthRoutes.js";
+import { deploymentRoutes } from "./api/deploymentRoutes.js";
 
 export function createApp() {
   const app = express();
@@ -21,6 +22,7 @@ export function createApp() {
   app.use("/incidents", incidentRoutes);
   app.use("/alerts", alertRoutes);
   app.use("/services", serviceRoutes);
+  app.use("/deployments", deploymentRoutes);
   app.use("/ask", askRoutes);
 
   app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {

@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { env } from "../config/env.js";
+import { redisConnectionOptions } from "../config/redisConnection.js";
 
 export const rcaQueueName = "root-cause-analysis";
 
@@ -8,9 +8,7 @@ export type RcaJobData = {
 };
 
 export const rcaQueue = new Queue<RcaJobData>(rcaQueueName, {
-  connection: {
-    url: env.redisUrl
-  },
+  connection: redisConnectionOptions(),
   defaultJobOptions: {
     attempts: 3,
     backoff: {

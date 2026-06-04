@@ -1,12 +1,13 @@
 import type mongoose from "mongoose";
 import { createEmbedding } from "../embeddings/embeddingService.js";
-import { searchCodeChunks, searchIncidentMemories } from "../embeddings/searchService.js";
+import { searchIncidentMemories, searchServiceCodeChunks } from "../embeddings/searchService.js";
 import { LogEntryModel } from "../logs/LogEntry.js";
 import { IncidentModel, type IncidentDocument } from "../incidents/Incident.js";
 import { IncidentMemoryModel } from "../incidents/IncidentMemory.js";
 import { getLatestRepositoryId } from "../services/repositoryIndexer.js";
 import { generateText } from "./llmService.js";
 import type { RootCauseAnalysis } from "../types/analysis.js";
+import { DeploymentModel } from "../deployments/Deployment.js";
 
 function parseAnalysis(text: string): RootCauseAnalysis {
   const fallback: RootCauseAnalysis = {
@@ -44,9 +45,15 @@ export async function runRootCauseAnalysis(incident: IncidentDocument) {
   const query = `${incident.service} ${incident.fingerprint}\n${logContext}`;
   const embedding = await createEmbedding(query);
   const repoId = await getLatestRepositoryId();
-  const [similarIncidents, codeChunks] = await Promise.all([
+  const deploymentWindowStart = new Date(incident.startedAt.getTime() - 2 * 60 * 60 * 1000);
+  const deploymentWindowEnd = new Date(incident.startedAt.getTime() + 30 * 60 * 1000);
+  const [similarIncidents, codeChunks, deployments] = await Promise.all([
     searchIncidentMemories(embedding, 5),
-    searchCodeChunks(embedding, repoId, 8)
+    searchServiceCodeChunks(embedding, incident.service, repoId, 8),
+    DeploymentModel.find({
+      service: incident.service,
+      timestamp: { $gte: deploymentWindowStart, $lte: deploymentWindowEnd }
+    }).sort({ timestamp: -1 })
   ]);
 
   const prompt = `
@@ -70,7 +77,14 @@ Logs:
 ${logContext}
 
 Similar past incidents:
-${similarIncidents.map((memory) => `- ${memory.title}: ${memory.rootCause}`).join("\n") || "None"}
+${similarIncidents.map((memory) => `- ${memory.title}: ${memory.rootCause}. Fixes: ${(memory.suggestedFixes ?? []).join(", ") || "unknown"}. Outcome: ${memory.outcome ?? "unknown"}`).join("\n") || "None"}
+
+Recent deployments for this service:
+${deployments.map((deployment) => {
+    const minutesBeforeIncident = Math.round((incident.startedAt.getTime() - deployment.timestamp.getTime()) / 60000);
+    const timing = minutesBeforeIncident >= 0 ? `${minutesBeforeIncident} minutes before incident started` : "after incident started";
+    return `- ${incident.service} deployed commit ${deployment.commit} ${timing}${deployment.author ? ` by ${deployment.author}` : ""}`;
+  }).join("\n") || "None"}
 
 Relevant code chunks:
 ${codeChunks.map((chunk) => `FILE: ${chunk.filePath}\n${chunk.content}`).join("\n\n---\n\n") || "No indexed code found"}
@@ -80,6 +94,7 @@ ${codeChunks.map((chunk) => `FILE: ${chunk.filePath}\n${chunk.content}`).join("\
   const analysis = parseAnalysis(analysisText);
   const relatedCodeChunkIds = codeChunks.map((chunk) => chunk._id as mongoose.Types.ObjectId);
   const similarIncidentIds = similarIncidents.map((memory) => memory._id as mongoose.Types.ObjectId);
+  const relatedDeploymentIds = deployments.map((deployment) => deployment._id as mongoose.Types.ObjectId);
 
   await IncidentModel.updateOne(
     { _id: incident._id },
@@ -87,12 +102,14 @@ ${codeChunks.map((chunk) => `FILE: ${chunk.filePath}\n${chunk.content}`).join("\
       $set: {
         analysis,
         relatedCodeChunks: relatedCodeChunkIds,
-        similarIncidentIds
+        similarIncidentIds,
+        relatedDeploymentIds
       }
     }
   );
 
-  const memoryText = `${incident.title}\n${analysis.whatHappened}\n${analysis.likelyRootCause}`;
+  const outcome = incident.status === "resolved" ? "resolved" : "analysis_generated";
+  const memoryText = `${incident.title}\n${analysis.whatHappened}\n${analysis.likelyRootCause}\n${analysis.suggestedFixes.join("\n")}\n${outcome}`;
   await IncidentMemoryModel.updateOne(
     { incidentId: incident._id },
     {
@@ -101,6 +118,8 @@ ${codeChunks.map((chunk) => `FILE: ${chunk.filePath}\n${chunk.content}`).join("\
         title: incident.title,
         summary: analysis.whatHappened,
         rootCause: analysis.likelyRootCause,
+        suggestedFixes: analysis.suggestedFixes,
+        outcome,
         embedding: await createEmbedding(memoryText),
         timestamp: new Date()
       }

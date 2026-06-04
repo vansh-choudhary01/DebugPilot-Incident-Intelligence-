@@ -2,7 +2,7 @@
   {
     "service": "payment-service",
     "level": "error",
-    "message": "Payment checkout failed because database connection pool timed out",
+    "message": "Database connection unavailable during checkout",
     "metadata": { "route": "/checkout", "tenant": "demo" }
   },
   {

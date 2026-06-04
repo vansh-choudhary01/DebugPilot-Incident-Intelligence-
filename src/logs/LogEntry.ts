@@ -8,6 +8,7 @@ export type LogEntryDocument = {
   metadata?: Record<string, unknown>;
   timestamp: Date;
   fingerprint: string;
+  fingerprintEmbedding: number[];
   createdAt: Date;
 };
 
@@ -18,7 +19,8 @@ const logEntrySchema = new Schema<LogEntryDocument>(
     message: { type: String, required: true },
     metadata: { type: Schema.Types.Mixed },
     timestamp: { type: Date, required: true, index: true },
-    fingerprint: { type: String, required: true, index: true }
+    fingerprint: { type: String, required: true, index: true },
+    fingerprintEmbedding: { type: [Number], required: true }
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

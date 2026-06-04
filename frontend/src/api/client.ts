@@ -37,6 +37,14 @@ export type Alert = {
   createdAt: string;
 };
 
+export type Deployment = {
+  _id: string;
+  service: string;
+  commit: string;
+  timestamp: string;
+  author?: string;
+};
+
 export type Repository = {
   _id: string;
   url: string;

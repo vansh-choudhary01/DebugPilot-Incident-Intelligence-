@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import simpleGit from "simple-git";
+import { simpleGit } from "simple-git";
 import { env } from "../config/env.js";
 
 function repoNameFromUrl(url: string) {

@@ -1,11 +1,19 @@
 import { connectDatabase } from "../src/config/database.js";
 import { ingestLog } from "../src/logs/logService.js";
 import mongoose from "mongoose";
+import { DeploymentModel } from "../src/deployments/Deployment.js";
 
 async function main() {
   await connectDatabase();
 
   const baseTime = Date.now() - 4 * 60 * 1000;
+
+  await DeploymentModel.create({
+    service: "payment-service",
+    commit: "abc123",
+    author: "demo-user",
+    timestamp: new Date(baseTime - 5 * 60 * 1000)
+  });
 
   for (let index = 0; index < 22; index += 1) {
     await ingestLog({

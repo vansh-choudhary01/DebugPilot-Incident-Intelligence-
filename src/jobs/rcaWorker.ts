@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
 import { sendIncidentAlert } from "../alerts/alertService.js";
 import { runRootCauseAnalysis } from "../agents/rootCauseAgent.js";
-import { env } from "../config/env.js";
+import { redisConnectionOptions } from "../config/redisConnection.js";
 import { IncidentModel } from "../incidents/Incident.js";
 import { rcaQueueName, type RcaJobData } from "./rcaQueue.js";
 
@@ -23,9 +23,7 @@ export function startRcaWorker() {
       }
     },
     {
-      connection: {
-        url: env.redisUrl
-      },
+      connection: redisConnectionOptions(),
       concurrency: 2
     }
   );

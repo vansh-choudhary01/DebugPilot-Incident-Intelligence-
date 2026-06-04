@@ -6,7 +6,8 @@ export type IncidentMemoryDocument = {
   title: string;
   summary: string;
   rootCause: string;
-  resolution?: string;
+  suggestedFixes: string[];
+  outcome: string;
   embedding: number[];
   timestamp: Date;
 };
@@ -17,7 +18,8 @@ const incidentMemorySchema = new Schema<IncidentMemoryDocument>(
     title: { type: String, required: true },
     summary: { type: String, required: true },
     rootCause: { type: String, required: true },
-    resolution: String,
+    suggestedFixes: { type: [String], default: [] },
+    outcome: { type: String, default: "unknown" },
     embedding: { type: [Number], required: true },
     timestamp: { type: Date, required: true, index: true }
   },

@@ -29,7 +29,7 @@ Recent logs:
 ${recentLogs.map((log) => `[${log.timestamp.toISOString()}] ${log.level} ${log.service}: ${log.message}`).join("\n")}
 
 Similar incident memory:
-${memories.map((memory) => `- ${memory.title}: ${memory.rootCause}`).join("\n") || "None"}
+${memories.map((memory) => `- ${memory.title}: ${memory.rootCause}. Fixes: ${(memory.suggestedFixes ?? []).join(", ") || "unknown"}. Outcome: ${memory.outcome ?? "unknown"}`).join("\n") || "None"}
 
 Related code:
 ${codeChunks.map((chunk) => `FILE: ${chunk.filePath}\n${chunk.content}`).join("\n\n---\n\n") || "No code chunks found"}

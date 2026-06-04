@@ -15,6 +15,7 @@ export type IncidentDocument = {
   analysis?: RootCauseAnalysis;
   relatedCodeChunks: mongoose.Types.ObjectId[];
   similarIncidentIds: mongoose.Types.ObjectId[];
+  relatedDeploymentIds: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -42,8 +43,9 @@ const incidentSchema = new Schema<IncidentDocument>(
     startedAt: { type: Date, required: true },
     lastSeenAt: { type: Date, required: true },
     analysis: rootCauseSchema,
-    relatedCodeChunks: [{ type: Schema.Types.ObjectId, ref: "CodeChunk" }],
-    similarIncidentIds: [{ type: Schema.Types.ObjectId, ref: "IncidentMemory" }]
+    relatedCodeChunks: { type: [{ type: Schema.Types.ObjectId, ref: "CodeChunk" }], default: [] },
+    similarIncidentIds: { type: [{ type: Schema.Types.ObjectId, ref: "IncidentMemory" }], default: [] },
+    relatedDeploymentIds: { type: [{ type: Schema.Types.ObjectId, ref: "Deployment" }], default: [] }
   },
   { timestamps: true }
 );

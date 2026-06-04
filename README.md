@@ -14,7 +14,7 @@ Application logs -> incident detection -> root cause analysis -> alert -> incide
 - Node.js + TypeScript
 - Express
 - MongoDB + MongoDB Vector Search
-- Redis
+- Redis + BullMQ jobs
 - OpenAI or Gemini SDK, with a mock fallback
 - React + Vite
 
@@ -26,7 +26,7 @@ src/
   services/        repository indexing and ask workflow
   agents/          LLM/root cause analysis
   repositories/    repository schema
-  jobs/            reserved for background jobs
+  jobs/            BullMQ RCA queue and worker
   embeddings/      embedding and vector search helpers
   github/          clone, scan, and chunk repository code
   logs/            log schema, ingestion, fingerprints
@@ -77,7 +77,13 @@ GEMINI_API_KEY=...
 npm run dev
 ```
 
-5. Start the frontend in another terminal.
+5. Start the RCA worker in another terminal.
+
+```bash
+npm run worker
+```
+
+6. Start the frontend in another terminal.
 
 ```bash
 npm run frontend:dev
@@ -89,7 +95,7 @@ Backend: `http://localhost:4000`
 
 ## Demo
 
-Seed logs that trigger a payment incident:
+Seed a deployment plus logs that trigger a payment incident:
 
 ```bash
 npm run seed
@@ -103,6 +109,18 @@ Then open the dashboard and check:
 - Ask: try `Why is payment service failing?`
 
 ## API
+
+### Record a deployment
+
+```http
+POST /deployments
+{
+  "service": "payment-service",
+  "commit": "abc123",
+  "timestamp": "2026-06-04T09:55:00.000Z",
+  "author": "alex"
+}
+```
 
 ### Connect and index a repository
 
@@ -136,7 +154,7 @@ POST /logs
 }
 ```
 
-DebugPilot stores the log in `logs`, generates a fingerprint like `db_connection_failed`, and checks whether an incident should be created.
+DebugPilot stores the log in `logs`, generates a fingerprint like `db_connection_failed`, stores a fingerprint embedding, checks whether an incident should be created, and enqueues RCA in Redis.
 
 ### Ask a debugging question
 
@@ -178,7 +196,20 @@ The MVP uses intentionally simple rules:
   "message": "Payment checkout failed",
   "metadata": {},
   "timestamp": "2026-06-04T10:00:00.000Z",
-  "fingerprint": "payment_failed"
+  "fingerprint": "payment_failed",
+  "fingerprintEmbedding": [0.1, 0.2]
+}
+```
+
+### `log_fingerprints`
+
+```json
+{
+  "service": "payment-service",
+  "fingerprint": "db_connection_failed",
+  "sampleMessage": "Database connection unavailable during checkout",
+  "embedding": [0.1, 0.2],
+  "lastSeenAt": "2026-06-04T10:00:00.000Z"
 }
 ```
 
@@ -209,10 +240,43 @@ The MVP uses intentionally simple rules:
   "title": "payment-service db connection failed",
   "summary": "Repeated checkout failures occurred.",
   "rootCause": "Database pool exhaustion.",
-  "resolution": "Increased pool size.",
+  "suggestedFixes": ["Increase pool size", "Check for leaked connections"],
+  "outcome": "analysis_generated",
   "embedding": [0.1, 0.2],
   "timestamp": "2026-06-04T10:00:00.000Z"
 }
+```
+
+### `deployments`
+
+```json
+{
+  "service": "payment-service",
+  "commit": "abc123",
+  "timestamp": "2026-06-04T09:55:00.000Z",
+  "author": "alex"
+}
+```
+
+## Background RCA
+
+The request lifecycle stays short:
+
+```text
+POST /logs -> store log -> detect/create incident -> enqueue Redis job -> return
+```
+
+The worker owns the expensive path:
+
+```text
+RCA worker -> load incident -> retrieve logs -> retrieve deployments -> retrieve similar memory -> retrieve service-aware code -> call LLM -> save analysis -> save memory -> alert
+```
+
+Run the API and worker separately:
+
+```bash
+npm run dev
+npm run worker
 ```
 
 ## Vector Search

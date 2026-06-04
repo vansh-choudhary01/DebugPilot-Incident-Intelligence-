@@ -1,13 +1,14 @@
 import type { LogEntryDocument } from "../logs/LogEntry.js";
 import { LogEntryModel } from "../logs/LogEntry.js";
 import { IncidentModel } from "./Incident.js";
-import { runRootCauseAnalysis } from "../agents/rootCauseAgent.js";
-import { sendIncidentAlert } from "../alerts/alertService.js";
+import { cosineSimilarity } from "../embeddings/vectorMath.js";
+import { enqueueRcaJob } from "../jobs/rcaQueue.js";
 
 const repeatedFailureThreshold = 20;
 const repeatedFailureWindowMs = 10 * 60 * 1000;
 const spikeThreshold = 30;
 const spikeWindowMs = 5 * 60 * 1000;
+const semanticSimilarityThreshold = 0.78;
 
 function severityForCount(count: number) {
   if (count >= 50) {
@@ -24,12 +25,21 @@ function severityForCount(count: number) {
 export async function detectIncidentForLog(log: LogEntryDocument) {
   const repeatedWindowStart = new Date(log.timestamp.getTime() - repeatedFailureWindowMs);
 
-  const matchingLogs = await LogEntryModel.find({
+  const recentErrorLogs = await LogEntryModel.find({
     service: log.service,
-    fingerprint: log.fingerprint,
     level: { $in: ["error", "fatal"] },
     timestamp: { $gte: repeatedWindowStart, $lte: log.timestamp }
   }).sort({ timestamp: 1 });
+
+  const matchingLogs = recentErrorLogs.filter((entry) => {
+    if (entry.fingerprint === log.fingerprint) {
+      return true;
+    }
+
+    return cosineSimilarity(log.fingerprintEmbedding, entry.fingerprintEmbedding) >= semanticSimilarityThreshold;
+  });
+
+  const relatedFingerprints = [...new Set(matchingLogs.map((entry) => entry.fingerprint))];
 
   const spikeWindowStart = new Date(log.timestamp.getTime() - spikeWindowMs);
   const spikeCount = await LogEntryModel.countDocuments({
@@ -44,7 +54,7 @@ export async function detectIncidentForLog(log: LogEntryDocument) {
 
   const existingOpenIncident = await IncidentModel.findOne({
     service: log.service,
-    fingerprint: log.fingerprint,
+    fingerprint: { $in: relatedFingerprints },
     status: "open"
   }).sort({ createdAt: -1 });
 
@@ -54,6 +64,11 @@ export async function detectIncidentForLog(log: LogEntryDocument) {
     existingOpenIncident.logIds = matchingLogs.map((entry) => entry._id);
     existingOpenIncident.severity = severityForCount(Math.max(matchingLogs.length, spikeCount));
     await existingOpenIncident.save();
+
+    if (!existingOpenIncident.analysis) {
+      await enqueueRcaJob(existingOpenIncident._id.toString());
+    }
+
     return existingOpenIncident;
   }
 
@@ -68,10 +83,10 @@ export async function detectIncidentForLog(log: LogEntryDocument) {
     startedAt: matchingLogs[0]?.timestamp ?? log.timestamp,
     lastSeenAt: log.timestamp,
     relatedCodeChunks: [],
-    similarIncidentIds: []
+    similarIncidentIds: [],
+    relatedDeploymentIds: []
   });
 
-  await runRootCauseAnalysis(incident);
-  await sendIncidentAlert(incident);
+  await enqueueRcaJob(incident._id.toString());
   return incident;
 }
