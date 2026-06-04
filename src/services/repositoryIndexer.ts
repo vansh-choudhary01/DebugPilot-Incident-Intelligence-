@@ -72,3 +72,26 @@ export async function getLatestRepositoryId() {
   const repo = await RepositoryModel.findOne({ status: "indexed" }).sort({ indexedAt: -1 });
   return repo?._id as mongoose.Types.ObjectId | undefined;
 }
+
+function normalizedTerms(value: string) {
+  return value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((term) => term.length > 2 && term !== "service");
+}
+
+export async function getRepositoryIdForService(service: string) {
+  const terms = normalizedTerms(service);
+
+  if (terms.length === 0) {
+    return getLatestRepositoryId();
+  }
+
+  const repositories = await RepositoryModel.find({ status: "indexed" }).sort({ indexedAt: -1 });
+  const matchingRepository = repositories.find((repo) => {
+    const searchable = `${repo.name} ${repo.url} ${repo.localPath}`.toLowerCase();
+    return terms.some((term) => searchable.includes(term));
+  });
+
+  return (matchingRepository?._id ?? repositories[0]?._id) as mongoose.Types.ObjectId | undefined;
+}

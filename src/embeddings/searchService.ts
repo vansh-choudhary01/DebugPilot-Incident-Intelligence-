@@ -48,7 +48,8 @@ export async function searchServiceCodeChunks(
   embedding: number[],
   service: string,
   repoId?: mongoose.Types.ObjectId,
-  limit = 8
+  limit = 8,
+  allowFallback = true
 ): Promise<Array<Scored<CodeChunkDocument>>> {
   const terms = serviceTerms(service);
   if (terms.length === 0) {
@@ -70,7 +71,7 @@ export async function searchServiceCodeChunks(
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
     .slice(0, limit) as Array<Scored<CodeChunkDocument>>;
 
-  if (ranked.length >= Math.min(3, limit)) {
+  if (ranked.length >= Math.min(3, limit) || !allowFallback) {
     return ranked;
   }
 

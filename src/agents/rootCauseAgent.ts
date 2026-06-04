@@ -4,7 +4,7 @@ import { searchIncidentMemories, searchServiceCodeChunks } from "../embeddings/s
 import { LogEntryModel } from "../logs/LogEntry.js";
 import { IncidentModel, type IncidentDocument } from "../incidents/Incident.js";
 import { IncidentMemoryModel } from "../incidents/IncidentMemory.js";
-import { getLatestRepositoryId } from "../services/repositoryIndexer.js";
+import { getRepositoryIdForService } from "../services/repositoryIndexer.js";
 import { generateText } from "./llmService.js";
 import type { RootCauseAnalysis } from "../types/analysis.js";
 import { DeploymentModel } from "../deployments/Deployment.js";
@@ -45,12 +45,12 @@ export async function runRootCauseAnalysis(incident: IncidentDocument) {
 
   const query = `${incident.service} ${incident.fingerprint}\n${logContext}`;
   const embedding = await createEmbedding(query);
-  const repoId = await getLatestRepositoryId();
+  const repoId = await getRepositoryIdForService(incident.service);
   const contextWindowStart = new Date(incident.startedAt.getTime() - 2 * 60 * 60 * 1000);
   const contextWindowEnd = new Date(incident.lastSeenAt.getTime() + 30 * 60 * 1000);
   const [similarIncidents, codeChunks, deployments, metrics] = await Promise.all([
     searchIncidentMemories(embedding, 5),
-    searchServiceCodeChunks(embedding, incident.service, repoId, 8),
+    searchServiceCodeChunks(embedding, incident.service, repoId, 8, false),
     DeploymentModel.find({
       service: incident.service,
       timestamp: { $gte: contextWindowStart, $lte: contextWindowEnd }
@@ -65,6 +65,7 @@ export async function runRootCauseAnalysis(incident: IncidentDocument) {
 
   const prompt = `
 You are DebugPilot, an AI engineer and SRE assistant. Analyze this production incident.
+Only use evidence for service "${incident.service}". Do not suggest files from another service or repository.
 
 Return JSON only with:
 {
