@@ -1,4 +1,4 @@
-import { CheckCircle, Code2, GitCommit, ListChecks, SearchX, ScrollText } from "lucide-react";
+import { Activity, Brain, CheckCircle, Code2, GitCommit, ListChecks, SearchX, ScrollText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { apiGet, apiPost, type Deployment, type Incident } from "../api/client.js";
@@ -56,19 +56,43 @@ export function IncidentDetailsPage() {
   }
 
   return (
-    <section>
+    <section className="dashboard-page incident-detail-page">
       <header className="page-header">
         <div>
+          <span className="page-eyebrow">Incident context</span>
           <h1>{incident.title}</h1>
           <p>{incident.service} / {incident.fingerprint}</p>
         </div>
-        <button onClick={resolveIncident}>
+        <button onClick={resolveIncident} disabled={incident.status === "resolved"}>
           <CheckCircle size={16} /> Resolve
         </button>
       </header>
 
+      <div className="summary-grid">
+        <div className="summary-card">
+          <Activity size={18} />
+          <span>Grouped errors</span>
+          <strong>{incident.occurrenceCount}</strong>
+        </div>
+        <div className="summary-card">
+          <ScrollText size={18} />
+          <span>Relevant logs</span>
+          <strong>{incident.logs.length}</strong>
+        </div>
+        <div className="summary-card">
+          <Code2 size={18} />
+          <span>Code chunks</span>
+          <strong>{incident.relatedCodeChunks.length}</strong>
+        </div>
+        <div className="summary-card">
+          <Brain size={18} />
+          <span>Memory matches</span>
+          <strong>{incident.similarIncidents.length}</strong>
+        </div>
+      </div>
+
       <div className="detail-grid">
-        <div className="panel">
+        <div className="panel incident-summary-panel">
           <div className="panel-title">
             <ScrollText size={18} />
             <h2>Incident Summary</h2>
@@ -78,9 +102,12 @@ export function IncidentDetailsPage() {
             <StatusPill label={incident.severity} tone={incident.severity === "high" ? "bad" : incident.severity === "medium" ? "warn" : "neutral"} />
           </div>
           <p>{incident.analysis?.whatHappened ?? "Analysis pending."}</p>
-          <p>Confidence: {Math.round((incident.analysis?.confidenceScore ?? 0) * 100)}%</p>
+          <div className="confidence-meter">
+            <span>RCA confidence</span>
+            <strong>{Math.round((incident.analysis?.confidenceScore ?? 0) * 100)}%</strong>
+          </div>
         </div>
-        <div className="panel">
+        <div className="panel root-cause-panel">
           <div className="panel-title">
             <SearchX size={18} />
             <h2>Root Cause</h2>
@@ -89,7 +116,7 @@ export function IncidentDetailsPage() {
         </div>
       </div>
 
-      <div className="detail-grid">
+      <div className="detail-grid evidence-grid">
         <div className="panel">
           <div className="panel-title">
             <ListChecks size={18} />
@@ -118,7 +145,7 @@ export function IncidentDetailsPage() {
         </div>
       </div>
 
-      <div className="detail-grid">
+      <div className="detail-grid evidence-grid">
         <div className="panel">
           <div className="panel-title">
             <Code2 size={18} />
@@ -132,7 +159,10 @@ export function IncidentDetailsPage() {
           ))}
         </div>
         <div className="panel">
-          <h2>Similar Incidents</h2>
+          <div className="panel-title">
+            <Brain size={18} />
+            <h2>Similar Incidents</h2>
+          </div>
           {incident.similarIncidents.map((memory) => (
             <p key={memory._id}>
               <strong>{memory.title}</strong><br />
@@ -144,7 +174,7 @@ export function IncidentDetailsPage() {
         </div>
       </div>
 
-      <div className="panel">
+      <div className="panel log-panel">
         <div className="panel-title">
           <ScrollText size={18} />
           <h2>Relevant Logs</h2>
