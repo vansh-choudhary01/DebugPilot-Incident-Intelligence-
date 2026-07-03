@@ -36,12 +36,12 @@ const STACK = [
 ];
 
 const PIPELINE = [
-  { icon: <Activity size={15} />, label: "Log ingested", color: "#3dd9c5" },
-  { icon: <Zap size={15} />, label: "Fingerprint generated", color: "#3dd9c5" },
-  { icon: <AlertTriangle size={15} />, label: "Incident created", color: "#f0c040" },
-  { icon: <Database size={15} />, label: "RCA job enqueued", color: "#7a9ab4" },
-  { icon: <Bot size={15} />, label: "Analysis saved", color: "#7eb8f7" },
-  { icon: <Bell size={15} />, label: "Alert fired", color: "#f07070" },
+  { icon: <Activity size={15} />, label: "Log ingested", color: "#f5f5f5" },
+  { icon: <Zap size={15} />, label: "Fingerprint generated", color: "#e5e5e5" },
+  { icon: <AlertTriangle size={15} />, label: "Incident created", color: "#d4d4d4" },
+  { icon: <Database size={15} />, label: "RCA job enqueued", color: "#c4c4c4" },
+  { icon: <Bot size={15} />, label: "Analysis saved", color: "#a3a3a3" },
+  { icon: <Bell size={15} />, label: "Alert fired", color: "#8a8a8a" },
 ];
 
 export function HomePage() {

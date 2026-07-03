@@ -2093,3 +2093,311 @@ pre {
   .lp-footer { flex-direction: column; gap: 8px; text-align: center; }
   .lp-nav-inner { padding: 0 20px; }
 }
+
+/* Monochrome premium theme */
+
+:root,
+html,
+body,
+#root {
+  background: #050505;
+  color: #f5f5f5;
+}
+
+button,
+.lp-btn-primary,
+.lp-nav-cta {
+  background: #f5f5f5;
+  border-color: #f5f5f5;
+  color: #050505;
+  box-shadow: none;
+}
+
+button:hover,
+.lp-btn-primary:hover,
+.lp-nav-cta:hover {
+  background: #d4d4d4;
+  border-color: #d4d4d4;
+  color: #050505;
+  box-shadow: none;
+}
+
+.icon-button {
+  background: #1a1a1a;
+  border-color: #3a3a3a;
+  color: #f5f5f5;
+}
+
+.icon-button:hover {
+  background: #2a2a2a;
+}
+
+.app-shell,
+.lp {
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.075), transparent 340px),
+    radial-gradient(circle at 85% 10%, rgba(255, 255, 255, 0.045), transparent 300px),
+    #050505;
+  color: #d4d4d4;
+}
+
+.sidebar,
+.lp-nav {
+  background: rgba(5, 5, 5, 0.92);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.brand-mark,
+.lp-logo-mark {
+  background: #f5f5f5;
+  color: #050505;
+  box-shadow: none;
+}
+
+.brand span,
+.lp-logo span,
+.page-header h1,
+.dashboard-hero h2,
+.section-heading h2,
+.summary-card strong,
+.metric-card h2,
+.incident-row h2,
+.panel h2,
+.ask-box-header,
+.lp-h1,
+.lp-h2,
+.lp-cta-title,
+.lp-rule-val,
+.lp-stack-item strong,
+.lp-feature h3,
+.lp-step h3,
+.repo-row strong,
+td strong,
+summary {
+  color: #f5f5f5;
+}
+
+.brand small,
+.sidebar-context,
+.sidebar-context strong,
+.sidebar-flow,
+.sidebar a,
+.page-header p,
+.dashboard-hero p,
+.dashboard-page,
+.page-eyebrow,
+.summary-card span,
+.metric-card span,
+.sparkline-header span,
+.repo-row span,
+.incident-row p,
+.incident-meta,
+.incident-context-line,
+.panel p,
+.empty-state,
+.lp-nav-links a,
+.lp-btn-ghost,
+.lp-eyebrow,
+.lp-hero-body,
+.lp-section-label,
+.lp-section-body,
+.lp-step p,
+.lp-feature p,
+.lp-rule-label,
+.lp-rule-window,
+.lp-pipeline-title,
+.lp-pipeline-label,
+.lp-stack-item span,
+.lp-incident-count,
+.lp-incident > span,
+.lp-footer-brand span,
+.lp-footer-stack,
+td {
+  color: #a3a3a3;
+}
+
+.page-eyebrow,
+.lp-section-label,
+.lp-eyebrow,
+.lp-see-all,
+.sidebar a svg,
+.sidebar-flow svg,
+.context-chain svg,
+.summary-card svg,
+.panel-title svg,
+.ask-box-header svg,
+.repo-form svg {
+  color: #f5f5f5;
+}
+
+.sidebar a.active,
+.sidebar a:hover,
+.lp-nav-links a:hover,
+.lp-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #f5f5f5;
+}
+
+.sidebar-context,
+.dashboard-hero,
+.context-panel,
+.repo-row,
+.incident-row,
+.table-card,
+.panel,
+.empty-state,
+.metric-card,
+.repo-form,
+.ask-box,
+.summary-card,
+.lp-step,
+.lp-feature,
+.lp-features,
+.lp-stack,
+.lp-stack-item,
+.lp-rule,
+.lp-pipeline-card,
+.lp-incident,
+.lp-hero-stats {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02)),
+    #0d0d0d;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.36);
+}
+
+.dashboard-hero::before {
+  background: #f5f5f5;
+}
+
+.lp-hero-glow,
+.lp-cta-glow {
+  background:
+    radial-gradient(ellipse 70% 45% at 50% -5%, rgba(255, 255, 255, 0.1) 0%, transparent 66%),
+    radial-gradient(ellipse 50% 35% at 80% 95%, rgba(255, 255, 255, 0.035) 0%, transparent 60%);
+}
+
+.lp-h1 em {
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: #f5f5f5;
+  background-clip: initial;
+  color: #f5f5f5;
+}
+
+.lp-eyebrow-dot {
+  background: #f5f5f5;
+}
+
+.lp-hero-stat strong,
+.lp-hero-stat-warn strong,
+.lp-hero-stat-bad strong,
+.lp-hero-stat-good strong {
+  color: #f5f5f5;
+}
+
+.context-chain div,
+.context-stat,
+.confidence-meter,
+.context-hints p,
+.incident-context-line span,
+.sparkline,
+.lp-step-icon,
+.lp-feature-icon,
+.lp-rule-window,
+.lp-pipeline-node {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f5f5f5;
+}
+
+.context-stat strong,
+.confidence-meter strong {
+  color: #f5f5f5;
+}
+
+.repo-form input,
+.ask-box textarea {
+  background: #050505;
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #f5f5f5;
+}
+
+.repo-form input::placeholder,
+.ask-box textarea::placeholder {
+  color: #737373;
+}
+
+.repo-form input:focus,
+.ask-box textarea:focus {
+  border-color: #f5f5f5;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+
+.metric-numbers strong,
+.status-pill,
+.status-pill.good,
+.status-pill.warn,
+.status-pill.bad,
+.status-pill.neutral {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #d4d4d4;
+}
+
+.root-cause-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.02)),
+    #0d0d0d;
+}
+
+.incident-row:hover,
+.lp-step:hover,
+.lp-feature:hover,
+.lp-stack-item:hover,
+.lp-incident:hover {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.028)),
+    #101010;
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.44);
+}
+
+th {
+  background: #111111;
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  color: #a3a3a3;
+}
+
+td {
+  border-bottom-color: rgba(255, 255, 255, 0.09);
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+details {
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+pre,
+.log-line {
+  background: #050505;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #d4d4d4;
+}
+
+.sparkline path {
+  stroke: #f5f5f5;
+}
+
+.lp-section-alt {
+  background: rgba(255, 255, 255, 0.018);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.lp-rule {
+  border-left-color: rgba(255, 255, 255, 0.28);
+}
